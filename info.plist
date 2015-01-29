@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.alfredapp.david.todotxt</string>
+	<key>category</key>
+	<string>Productivity</string>
+	<key>connections</key>
+	<dict>
+		<key>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</key>
+		<array>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>David Randler</string>
+	<key>description</key>
+	<string>Todos from todo.txt file</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Todos</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>todo</string>
+				<key>runningsubtext</key>
+				<string>Loading...you should get some items done!</string>
+				<key>script</key>
+				<string>python todos.py "{query}"</string>
+				<key>title</key>
+				<string>List todo items</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string></string>
+	<key>uidata</key>
+	<dict>
+		<key>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</key>
+		<dict>
+			<key>ypos</key>
+			<real>530</real>
+		</dict>
+	</dict>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
