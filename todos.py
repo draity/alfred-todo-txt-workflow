@@ -48,6 +48,51 @@ def add_suggestions(query):
     if match:
         get_suggestions(query, "@")
 
+def add_todo_item_actions(query):
+    """Adds all todo item actions (like edit or delete) to the feedback items
+
+    Arguments:  query should be a delimeted unicode string in the form: {id}{delimiter}{todo-description}
+    """
+    # if no selected item saved OR the id of this query is not same as the saved one
+    if (not 'selected' in wf.settings.keys() or wf.settings['selected']['id'] != query[0]):
+        # save the current selection in the settings dict
+        wf.settings['selected'] = {'id': query[0], 'todo': query[1]}
+    
+    # At this point a selection with the same id as the current query is saved! 
+    # If the todo description (as stored in the todo.txt file) for this id is the same as the current query text:
+    # show all options, else hide them and only show the edit entry
+    if (wf.settings['selected']['todo'] == query[1]):
+        wf.add_item( title=u"Done"
+                   , subtitle=u"Move todo to done.txt"
+                   , arg=u"done{delimiter}{id}".format(id=query[0], delimiter=delimiter)
+                   , valid=True
+                   , icon=u"done.png"
+                   )
+        wf.add_item( title=u"Delete"
+                   , subtitle=u"Todo will be removed completly!"
+                   , arg=u"delete{delimiter}{id}".format(id=query[0], delimiter=delimiter)
+                   , valid=True
+                   , icon=u"remove.png"
+                   )
+        wf.add_item( title=u"Set priority"
+                   , subtitle=u"Choose in next step"
+                   , autocomplete=u"{id}{delimiter}prio{delimiter}A".format(id=query[0], delimiter=delimiter)
+                   , valid=False
+                   , icon=u"prio.png"
+                   )
+
+    wf.add_item( title=u"Edit directly..."
+               , subtitle=u"...to: {todo}".format(todo=query[1])
+               , arg=u"edit{delimiter}{id}{delimiter}{todo}".format(id=query[0], delimiter=delimiter, todo=query[1])
+               , valid=True
+               , icon=u"edit.png"
+               )
+    wf.add_item( title=u"Return to list"
+               , arg=u"return"
+               , valid=True
+               , icon=u"return.png"
+               )
+
 def get_description(todoItem):
     """Returns the description field for filtering"""
     return todoItem["description"]
@@ -186,12 +231,24 @@ def main(wf):
         ### List mode ###
         # split query on delimiter
         query = args.query.split(delimiter)
-            
-        # get and add suggestions
-        add_suggestions(query[0])
+        
+        # parts are used to select state
+        numberOfQueryParts = len(query)
+        
+        if numberOfQueryParts == 2:
+            ## State 2: show item actions ##
+            ## Precondition at this point: Todo selected ##
+            add_todo_item_actions(query)
 
-        # add todo items
-        add_todo_item_list(query)
+        else:
+            ## State 1: show list of todos ##
+            ## Precondition at this point: none ##
+
+            # get and add suggestions
+            add_suggestions(query[0])
+            
+            # add todo items
+            add_todo_item_list(query)
 
         ### Send the results to Alfred as XML ###
         wf.send_feedback()
