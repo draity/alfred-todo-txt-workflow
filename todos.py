@@ -2,10 +2,101 @@
 # encoding: utf-8
 
 import sys
+import subprocess
 import re
 import argparse
+import os
+from shutil import copyfile
 from datetime import date, datetime
 from workflow import Workflow, ICON_WARNING
+
+def rewrite_files(linenumber, action, value):
+    backupFileLocation = todotxt_location + u".bak"
+    copyfile(todotxt_location, backupFileLocation)
+    with open(backupFileLocation, "r") as backupFile:
+        with open(todotxt_location, "w") as todoFile:
+            n = 1 # line offset in comparison to backup
+            for i, line in enumerate(backupFile):
+                line = wf.decode(line)
+                if line[:-1] == "":
+                    n = n - 1 # hack for empty lines TODO: remove if not needed 
+                    continue
+                if str(i+n) == linenumber: #if desired line found
+                    if action == u"done":
+                        ####################################################################
+                        # Done action
+                        ####################################################################
+                        dateStringToday = datetime.now().strftime("%Y-%m-%d")
+                        # append todo to done file and don't write anything to todo file
+                        with open(donetxt_location, "a") as doneFile:
+                            doneFile.write("".join(["x ", dateStringToday, " ", line.encode('utf-8')]))
+                    elif action == u"prio":
+                        ####################################################################
+                        # Prioritize action
+                        ####################################################################
+                        newLine = ""
+                        if re.match(r"\([A-Z]\)", line):
+                            newLine = "".join(["(", value, ")", line[3:]])
+                        else:
+                            newLine = "".join(["(", value, ") ", line])
+                        todoFile.write(newLine.encode('utf-8'))
+                    elif action == u"edit":
+                        ####################################################################
+                        # Edit action
+                        ####################################################################
+                        newLine = ""
+                        # get prio and add date of exisitng todo as groups
+                        match = re.match(r"(\([A-Z]\))\s(\d{4}-\d{2}-\d{2})", line)
+                        # Append input according to keep existing values
+                        if match.group(1) and match.group(2): 
+                            newLine = "".join([line[:15], value, "\n"])
+                        elif match.group(1):
+                            newLine = "".join([line[:4], value, "\n"])
+                        elif match.group(2):
+                            newLine = "".join([line[:12], value, "\n"])
+                        else:
+                            newLine = value
+                        todoFile.write(newLine.encode('utf-8'))
+                else:
+                    todoFile.write(line.encode('utf-8'))
+
+def rewrite_selected(linenumber, action, todo):
+    if action == u"done":
+        ####################################################################
+        # Done action
+        ####################################################################
+        del wf.settings['selected']
+    elif action == u"delete":
+        ####################################################################
+        # Delete action
+        ####################################################################
+        del wf.settings['selected']
+    elif action == u"edit":
+        ####################################################################
+        # Edit action
+        ####################################################################
+        wf.settings['selected'] = {'id': linenumber, 'todo': todo}
+
+def perform_action(query):
+    """Calls an action according to the action keyword.
+    Current actions are: do (Key=done), delete (Key=delete) , prioritize (Key=prio) and edit (Key=edit) a todo.
+    No matter which or if an action was called, the workflow is triggered again via applescript to list all todos.
+    
+    Arguments: query is a unicode string delimeted by delimiter
+    """
+    if len(query) > 1:
+        ####################################################################
+        # Do, delete, prioritize and edit action
+        ####################################################################
+        id = query[1][1:]
+        if (len(query) > 2):
+            rewrite_selected(id, action, query[2])
+            rewrite_files(id, action, query[2])
+        else:
+            rewrite_selected(id, action, "")
+            rewrite_files(id, action, "")
+
+    subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "todo "'])
 
 def get_suggestions(query, symbol):
     """Adds suggestions items accoridng to input query and the found suggestions for the symbol.
@@ -227,6 +318,18 @@ def main(wf):
     if not todotxt_location or not donetxt_location:
         wf.send_feedback()
         return 0
+
+    ####################################################################
+    # Call desired mode: 
+    # - action: do something, show nothing
+    # - feedback: create and list feedback items
+    ####################################################################
+
+    ### Check for action flags: if given call desired method ###
+    if args.action and args.query:
+        ### Action mode ###
+        perform_action(args.query.split(delimiter))
+    else:
 
         ### List mode ###
         # split query on delimiter
