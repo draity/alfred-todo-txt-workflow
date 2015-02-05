@@ -10,6 +10,14 @@
 	<dict>
 		<key>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</key>
 		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6D11BE15-8B8B-4C56-9790-C6F2357B2E89</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
 		</array>
 	</dict>
 	<key>createdby</key>
@@ -22,6 +30,23 @@
 	<string>Todos</string>
 	<key>objects</key>
 	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python todos.py "{query}" --action</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>6D11BE15-8B8B-4C56-9790-C6F2357B2E89</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -54,6 +79,11 @@
 	<string></string>
 	<key>uidata</key>
 	<dict>
+		<key>6D11BE15-8B8B-4C56-9790-C6F2357B2E89</key>
+		<dict>
+			<key>ypos</key>
+			<real>480</real>
+		</dict>
 		<key>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</key>
 		<dict>
 			<key>ypos</key>
