@@ -184,6 +184,37 @@ def add_todo_item_actions(query):
                , icon=u"return.png"
                )
 
+def add_priority_options(query):
+    """Adds all priority options (like A or B) and an input option to the feedback items
+
+    Arguments:  query should be a delimeted unicode string in the form: {id}{delimiter}prio{delimiter}{priority}
+    """
+    wf.add_item( title=u"Input: {prio}".format(prio=query[2])
+               , arg=u"prio{delimiter}{id}{delimiter}{prio}".format(id=query[0], delimiter=delimiter, prio=query[2])
+               , valid=True
+               , icon=u"{prio}.png".format(prio=query[2])
+               )
+    wf.add_item( title=u"A"
+               , arg=u"prio{delimiter}{id}{delimiter}A".format(id=query[0], delimiter=delimiter)
+               , valid=True
+               , icon=u"A.png"
+               )
+    wf.add_item( title=u"B"
+               , arg=u"prio{delimiter}{id}{delimiter}B".format(id=query[0], delimiter=delimiter)
+               , valid=True
+               , icon=u"B.png"
+               )
+    wf.add_item( title=u"C"
+               , arg=u"prio{delimiter}{id}{delimiter}C".format(id=query[0], delimiter=delimiter)
+               , valid=True
+               , icon=u"C.png"
+               )
+    wf.add_item( title=u"Return to list"
+               , arg=u"return"
+               , valid=True
+               , icon=u"return.png"
+               )
+
 def get_description(todoItem):
     """Returns the description field for filtering"""
     return todoItem["description"]
@@ -342,6 +373,11 @@ def main(wf):
             ## State 2: show item actions ##
             ## Precondition at this point: Todo selected ##
             add_todo_item_actions(query)
+
+        elif numberOfQueryParts == 3:
+            ## State 3: show priority options ##
+            ## Precondition at this point: Priority action selected ##
+            add_priority_options(query)
 
         else:
             ## State 1: show list of todos ##
