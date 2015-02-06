@@ -85,18 +85,48 @@ def perform_action(query):
     Arguments: query is a unicode string delimeted by delimiter
     """
     if len(query) > 1:
-        ####################################################################
-        # Do, delete, prioritize and edit action
-        ####################################################################
-        id = query[1][1:]
-        if (len(query) > 2):
-            rewrite_selected(id, action, query[2])
-            rewrite_files(id, action, query[2])
+        action = query[0]
+        # TODO
+        # if action == u"settodo":
+        if action == u"add":
+            ####################################################################
+            # Add action
+            ####################################################################
+            newTodo = query[1]
+            dateStringToday = datetime.now().strftime("%Y-%m-%d")
+            if re.match(r"\([A-Z]\)", newTodo):
+                newTodo = u"".join([newTodo[0:4], dateStringToday, newTodo[3:], "\n"])
+            else:
+                newTodo = u"".join([dateStringToday, " ", newTodo, "\n"])
+            with open(todotxt_location, "a") as todoFile:
+                todoFile.write(newTodo.encode('utf-8'))
         else:
-            rewrite_selected(id, action, "")
-            rewrite_files(id, action, "")
+            ####################################################################
+            # Do, delete, prioritize and edit action
+            ####################################################################
+            id = query[1][1:]
+            if (len(query) > 2):
+                rewrite_selected(id, action, query[2])
+                rewrite_files(id, action, query[2])
+            else:
+                rewrite_selected(id, action, "")
+                rewrite_files(id, action, "")
 
     subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "todo "'])
+
+def add_new_todo(query):
+    """Generates the feedback items while entering a new todo
+
+    Arguments: query should be a todo item as unicode string
+    """
+    add_suggestions(query)
+    wf.add_item( title=u"Add: {query}".format(query=query)
+                   , arg=u"add{delimiter}{query}".format(delimiter=delimiter, query=query)
+                   , valid=True
+                   , icon="add.png"
+                   )
+    ### Send the results to Alfred as XML ###
+    wf.send_feedback()
 
 def get_suggestions(query, symbol):
     """Adds suggestions items accoridng to input query and the found suggestions for the symbol.
@@ -322,6 +352,10 @@ def main(wf):
     ####################################################################
     
     parser = argparse.ArgumentParser()
+    # add an optional flag --action to call this script to perform actions
+    parser.add_argument('--action', dest='action', default=None, action="store_true")
+    # add an optional flag --add to call this script to perform the add action
+    parser.add_argument('--add', dest='add', default=None, action="store_true")
     # add an optional query and save it to 'query'
     parser.add_argument('query', nargs='?', default=None)
     # parse the script's arguments
@@ -353,6 +387,7 @@ def main(wf):
     ####################################################################
     # Call desired mode: 
     # - action: do something, show nothing
+    # - add: add a todo as given by query
     # - feedback: create and list feedback items
     ####################################################################
 
@@ -360,8 +395,10 @@ def main(wf):
     if args.action and args.query:
         ### Action mode ###
         perform_action(args.query.split(delimiter))
+    elif args.add and args.query:
+        ### Add mode ###
+        add_new_todo(args.query)
     else:
-
         ### List mode ###
         # split query on delimiter
         query = args.query.split(delimiter)
