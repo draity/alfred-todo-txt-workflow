@@ -10,6 +10,14 @@ from shutil import copyfile
 from datetime import date, datetime
 from workflow import Workflow, ICON_WARNING
 
+def set_file(fileid, query):
+    """Stores the path of the file with the fileid in the settings
+
+    Arguments: fileide should be a string id
+               query should be a unix file path
+    """
+    wf.settings[fileid] = query
+
 def rewrite_files(linenumber, action, value):
     backupFileLocation = todotxt_location + u".bak"
     copyfile(todotxt_location, backupFileLocation)
@@ -48,6 +56,7 @@ def rewrite_files(linenumber, action, value):
                         # get prio and add date of exisitng todo as groups
                         match = re.match(r"(\([A-Z]\))\s(\d{4}-\d{2}-\d{2})", line)
                         # Append input according to keep existing values
+                        # TODOD: check value for prio and date
                         if match.group(1) and match.group(2): 
                             newLine = "".join([line[:15], value, "\n"])
                         elif match.group(1):
@@ -79,7 +88,7 @@ def rewrite_selected(linenumber, action, todo):
 
 def perform_action(query):
     """Calls an action according to the action keyword.
-    Current actions are: do (Key=done), delete (Key=delete) , prioritize (Key=prio) and edit (Key=edit) a todo.
+    Current actions are: add (Key=add), do (Key=done), delelte (Key=delete) , prioritize (Key=prio) and edit (Key=edit) a todo.
     No matter which or if an action was called, the workflow is triggered again via applescript to list all todos.
     
     Arguments: query is a unicode string delimeted by delimiter
@@ -356,10 +365,27 @@ def main(wf):
     parser.add_argument('--action', dest='action', default=None, action="store_true")
     # add an optional flag --add to call this script to perform the add action
     parser.add_argument('--add', dest='add', default=None, action="store_true")
+    # add an optional flag --set-todo-file to call this script to perform the add action
+    parser.add_argument('--set-todo-file', dest='todoFile', default=None, action="store_true")
+    # add an optional flag --set-done-file to call this script to perform the add action
+    parser.add_argument('--set-done-file', dest='doneFile', default=None, action="store_true")
     # add an optional query and save it to 'query'
     parser.add_argument('query', nargs='?', default=None)
     # parse the script's arguments
     args = parser.parse_args(wf.args)
+    
+    ####################################################################
+    # Trigger settings changes
+    ####################################################################
+    
+    #log.debug(args)
+    if args.todoFile and args.query:
+        set_file('todo-file-location', args.query)
+        return 0
+
+    if args.doneFile and args.query:
+        set_file('done-file-location', args.query)
+        return 0
 
     ####################################################################
     # Check for missing settings
