@@ -19,8 +19,7 @@
 				<string></string>
 			</dict>
 		</array>
-	</dict>
-	<key>E75C689F-4113-4AFD-9DC7-C9AB265933F7</key>
+		<key>E75C689F-4113-4AFD-9DC7-C9AB265933F7</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
@@ -31,6 +30,7 @@
 				<string></string>
 			</dict>
 		</array>
+	</dict>
 	<key>createdby</key>
 	<string>David Randler</string>
 	<key>description</key>
