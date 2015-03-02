@@ -139,26 +139,37 @@ def add_new_todo(query):
 
 def get_suggestions(query, symbol):
     """Adds suggestions items accoridng to input query and the found suggestions for the symbol.
-    Filters suggestables with the current input following the symbol
+    Filters suggestables with the current input following the symbol. Works for every position in the input query.
 
     Arguments:  query should be the currently entered query as unicode string
                 symbol is the symbol which starts suggestion for these suggestables
     """ 
-    suggestables = set()
+    suggestables = set() # set of all suggestables for this symbol
+    regex = r"(?:\s|^)(" + re.escape(symbol) + r"\S+)"
     for line in open(todotxt_location, "r"):
         description = wf.decode(line)
-        regex = re.escape(symbol) + r"\S*(?=\s|$)"
         projectsOfThisLine = set(re.findall(regex, description))
         suggestables = suggestables | projectsOfThisLine # union of sets
 
-    index = query.rfind(symbol)
-    partialInput = query[index:]
+    #log.debug(suggestables)
 
-    suggestables = wf.filter(partialInput, suggestables)
+    # find partial matches starting with symbol
+    regex = r"(?:\s|^)(" + re.escape(symbol) + r"\S*)"
+    queryMatches = re.finditer(regex, query)
 
-    for suggestion in suggestables:
-        wf.add_item( title=suggestion
-                   , autocomplete=u"{query}{suggestion} ".format(query=query[:index], suggestion=suggestion)
+    matchingSuggestables = list() # suggestables which match the current partial input
+    for match in queryMatches:
+        for suggestable in suggestables:
+            if (match.group(1) in suggestable and not suggestable in match.group(1)): # include only suggestables for incomplete terms
+                autocompleteTerm = query[:match.start(1)] + suggestable + query[match.end(1):] # replace input with suggestable
+                matchingSuggestables.append(dict(suggestion=suggestable, autocomplete=autocompleteTerm))
+
+    # log.debug(matchingSuggestables)
+    
+    # add feedback items
+    for suggestion in matchingSuggestables:
+        wf.add_item( title=suggestion['suggestion']
+                   , autocomplete=u"{query}".format(query=suggestion['autocomplete'])
                    , valid=False
                    )
 
@@ -169,12 +180,12 @@ def add_suggestions(query):
     Arguments:  query should be the currently entered query as unicode string
     """
     # Get projects suggestions
-    match = re.match(r".*(\s|^)\+\S*$", query)
+    match = re.match(r".*(?:\s|^)(\+\S*)", query)
     if match: 
         get_suggestions(query, "+")
 
     # Get context suggestions
-    match = re.match(r".*(\s|^)@\S*$", query)
+    match = re.match(r".*(?:\s|^)(@\S*)", query)
     if match:
         get_suggestions(query, "@")
 
