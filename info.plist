@@ -8,6 +8,39 @@
 	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
+		<key>431272B7-73CA-4E63-9A83-A3F0610BA969</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6D11BE15-8B8B-4C56-9790-C6F2357B2E89</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>6D11BE15-8B8B-4C56-9790-C6F2357B2E89</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>54E2C3B1-29D5-4094-8B97-D0DDAEF773A0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>6FCF9ACA-B1BA-4584-8187-3434419D55E5</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6D11BE15-8B8B-4C56-9790-C6F2357B2E89</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
 		<key>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</key>
 		<array>
 			<dict>
@@ -31,17 +64,6 @@
 			</dict>
 		</array>
 	</dict>
-	<key>E75C689F-4113-4AFD-9DC7-C9AB265933F7</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>6D11BE15-8B8B-4C56-9790-C6F2357B2E89</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-			</dict>
-		</array>
 	<key>createdby</key>
 	<string>David Randler</string>
 	<key>description</key>
@@ -61,6 +83,14 @@
 				<integer>102</integer>
 				<key>keyword</key>
 				<string>todo+</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
 				<key>script</key>
 				<string>python todos.py "{query}" --add</string>
 				<key>title</key>
@@ -74,6 +104,66 @@
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
 			<string>E75C689F-4113-4AFD-9DC7-C9AB265933F7</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>todo</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Loading...you should get some items done!</string>
+				<key>script</key>
+				<string>python todos.py "{query}"</string>
+				<key>title</key>
+				<string>List todo items</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>output</key>
+				<integer>0</integer>
+				<key>removeextension</key>
+				<false/>
+				<key>sticky</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>Alfredo</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>54E2C3B1-29D5-4094-8B97-D0DDAEF773A0</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -98,26 +188,104 @@
 			<key>config</key>
 			<dict>
 				<key>argumenttype</key>
-				<integer>1</integer>
+				<integer>2</integer>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>todo</string>
-				<key>runningsubtext</key>
-				<string>Loading...you should get some items done!</string>
+				<string>setup-alfredo</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
 				<key>script</key>
-				<string>python todos.py "{query}"</string>
+				<string>python todos.py "{query}" --setup</string>
+				<key>subtext</key>
+				<string>Choose todo files etc</string>
 				<key>title</key>
-				<string>List todo items</string>
+				<string>Setup Alfredo</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
-				<true/>
+				<false/>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
-			<string>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</string>
+			<string>431272B7-73CA-4E63-9A83-A3F0610BA969</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>anchorfields</key>
+				<true/>
+				<key>daterange</key>
+				<integer>0</integer>
+				<key>fields</key>
+				<array>
+					<dict>
+						<key>field</key>
+						<string>kMDItemDisplayName</string>
+						<key>not</key>
+						<false/>
+						<key>split</key>
+						<true/>
+						<key>value</key>
+						<string>{query}</string>
+						<key>words</key>
+						<true/>
+					</dict>
+					<dict>
+						<key>field</key>
+						<string>kMDItemAlternateNames</string>
+						<key>not</key>
+						<false/>
+						<key>split</key>
+						<true/>
+						<key>value</key>
+						<string>{query}</string>
+						<key>words</key>
+						<true/>
+					</dict>
+					<dict>
+						<key>field</key>
+						<string>kMDItemFinderComment</string>
+						<key>not</key>
+						<false/>
+						<key>split</key>
+						<true/>
+						<key>value</key>
+						<string>{query}</string>
+						<key>words</key>
+						<true/>
+					</dict>
+				</array>
+				<key>includesystem</key>
+				<false/>
+				<key>keyword</key>
+				<string>⁈ alfredofile</string>
+				<key>scopes</key>
+				<array/>
+				<key>subtext</key>
+				<string>Start typing to select a file</string>
+				<key>title</key>
+				<string>Locate your file</string>
+				<key>types</key>
+				<array>
+					<string>public.plain-text</string>
+				</array>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.filefilter</string>
+			<key>uid</key>
+			<string>6FCF9ACA-B1BA-4584-8187-3434419D55E5</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -126,22 +294,34 @@
 	<string></string>
 	<key>uidata</key>
 	<dict>
+		<key>431272B7-73CA-4E63-9A83-A3F0610BA969</key>
+		<dict>
+			<key>ypos</key>
+			<real>230</real>
+		</dict>
+		<key>54E2C3B1-29D5-4094-8B97-D0DDAEF773A0</key>
+		<dict>
+			<key>ypos</key>
+			<real>150</real>
+		</dict>
 		<key>6D11BE15-8B8B-4C56-9790-C6F2357B2E89</key>
 		<dict>
 			<key>ypos</key>
-			<real>480</real>
+			<real>150</real>
+		</dict>
+		<key>6FCF9ACA-B1BA-4584-8187-3434419D55E5</key>
+		<dict>
+			<key>ypos</key>
+			<real>340</real>
 		</dict>
 		<key>BD0D76E2-A8F0-40A3-8C1C-9CA6C3654712</key>
 		<dict>
 			<key>ypos</key>
-			<real>530</real>
+			<real>120</real>
 		</dict>
+		<key>E75C689F-4113-4AFD-9DC7-C9AB265933F7</key>
+		<dict/>
 	</dict>
-	<key>E75C689F-4113-4AFD-9DC7-C9AB265933F7</key>
-		<dict>
-			<key>ypos</key>
-			<real>420</real>
-		</dict>
 	<key>webaddress</key>
 	<string></string>
 </dict>

@@ -10,6 +10,39 @@ from shutil import copyfile
 from datetime import date, datetime
 from workflow import Workflow, ICON_WARNING
 
+def setup(query):
+    """Setup the workflow settings. 
+    Called directly through argumnet --setup or if there is some setting missing
+
+    Arguments: query should be the currently entered query as unicode string
+    """
+    if len(query) == 0:
+        ####################################################################
+        # Step selection
+        ####################################################################
+        setupStep = wf.settings.get('setup-step', None)
+        if not setupStep or setupStep == u'todofile':
+            ####################################################################
+            # Step 1: Select todo.txt
+            ####################################################################
+            wf.add_item( title=u"Step 1/2: Hit return to locate your todo.txt"
+                       , subtitle=u"todo.txt - stores what you need to do"
+                       , arg="alfredofile"
+                       , valid=True
+                       , icon=ICON_WARNING
+                       )
+        elif setupStep == u'donefile':
+            ####################################################################
+            # Step 2: Select done.txt
+            ####################################################################
+            wf.add_item( title=u"Step 2/2: Hit return to locate your done.txt"
+                       , subtitle=u"done.txt - stores how hardworking your are, contains done todos"
+                       , arg="alfredofile"
+                       , valid=True
+                       , icon=ICON_WARNING
+                       )
+        wf.send_feedback()
+
 def set_file(fileid, query):
     """Stores the path of the file with the fileid in the settings
 
@@ -93,10 +126,8 @@ def perform_action(query):
     
     Arguments: query is a unicode string delimeted by delimiter
     """
-    if len(query) > 1:
+    if len(query) >= 1:
         action = query[0]
-        # TODO
-        # if action == u"settodo":
         if action == u"add":
             ####################################################################
             # Add action
@@ -109,7 +140,8 @@ def perform_action(query):
                 newTodo = u"".join([dateStringToday, " ", newTodo, "\n"])
             with open(todotxt_location, "a") as todoFile:
                 todoFile.write(newTodo.encode('utf-8'))
-        else:
+            subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "todo "'])
+        elif action == u"done" or action == u"delete" or action == u"prio" or action == u"edit":
             ####################################################################
             # Do, delete, prioritize and edit action
             ####################################################################
@@ -120,8 +152,28 @@ def perform_action(query):
             else:
                 rewrite_selected(id, action, "")
                 rewrite_files(id, action, "")
-
-    subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "todo "'])
+            subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "todo "'])
+        elif action == u"alfredofile":
+            ####################################################################
+            # Setup action: forward to select a file
+            ####################################################################
+            subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "⁈ alfredofile "'])
+        elif os.path.isfile(action):
+            ####################################################################
+            # Setup action (implicit because of path as query): set file location
+            ####################################################################
+            setupStep = wf.settings.get('setup-step', None)
+            if not setupStep or setupStep == u'todofile':
+                set_file('todo-file-location', action) # store location in settings
+                wf.settings['setup-step'] = u'donefile' # update setup step
+                subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "setup-alfredo"']) # forward
+                print("todo.txt file selected: {filePath}".format(filePath=action)) # print confirmation to notification
+            elif setupStep == u'donefile':
+                set_file('done-file-location', action) # store location in settings
+                wf.settings['setup-step'] = None # update setup step
+                subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "todo "']) # forward
+                print("done.txt file selected: {filePath}".format(filePath=action)) # print confirmation to notification
+            
 
 def add_new_todo(query):
     """Generates the feedback items while entering a new todo
@@ -376,10 +428,8 @@ def main(wf):
     parser.add_argument('--action', dest='action', default=None, action="store_true")
     # add an optional flag --add to call this script to perform the add action
     parser.add_argument('--add', dest='add', default=None, action="store_true")
-    # add an optional flag --set-todo-file to call this script to perform the add action
-    parser.add_argument('--set-todo-file', dest='todoFile', default=None, action="store_true")
-    # add an optional flag --set-done-file to call this script to perform the add action
-    parser.add_argument('--set-done-file', dest='doneFile', default=None, action="store_true")
+    # add an optional flag --setup to call this script to perform the setup
+    parser.add_argument('--setup', dest='setup', default=None, action="store_true")
     # add an optional query and save it to 'query'
     parser.add_argument('query', nargs='?', default=None)
     # parse the script's arguments
@@ -388,37 +438,17 @@ def main(wf):
     ####################################################################
     # Trigger settings changes
     ####################################################################
-    
-    #log.debug(args)
-    if args.todoFile and args.query:
-        set_file('todo-file-location', args.query)
-        return 0
 
-    if args.doneFile and args.query:
-        set_file('done-file-location', args.query)
+    if args.setup:
+        setup(args.query)
         return 0
 
     ####################################################################
-    # Check for missing settings
+    # Check for missing settings: call setup
     ####################################################################
 
-    #log.debug(todotxt_location)
-    if not todotxt_location:  
-        wf.add_item( title=u"Where is your todo.txt located?"
-                   , subtitle=u"Action this item to locate the file"
-                   , arg=""
-                   , valid=False
-                   , icon=ICON_WARNING
-                   )
-    if not donetxt_location:  
-        wf.add_item( title=u"Where is your done.txt located?"
-                   , subtitle=u"Action this item to locate the file"
-                   , arg=""
-                   , valid=False
-                   , icon=ICON_WARNING
-                   )
     if not todotxt_location or not donetxt_location:
-        wf.send_feedback()
+        setup(args.query)
         return 0
 
     ####################################################################
