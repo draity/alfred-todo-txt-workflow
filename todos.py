@@ -321,6 +321,37 @@ def get_description(todoItem):
     """Returns the description field for filtering"""
     return todoItem["description"]
 
+def antistring(x):
+  """Returns an string which sorts reversed to the original
+
+  Arguments: a string x
+  """
+  return [256-ord(c) for c in x]+[257] 
+
+def extended_itemgetter(*items):
+  """Returns a callable creating a list of dict items of an object, supporting reverse (-) and lowercase
+
+  Arguments: A list of keys in the dictionary, possibly prepended with '-' to indicate reverse order for sorting this key
+  """
+  def extended_getter(thing):
+    """Returns a list of dict items of thing, supporting reverse (-) and lowercase
+
+    Arguments: The object to retrieve items from
+    """
+    sortItems = list()
+    for item in items:
+      if (item.startswith('-')):
+        # reverse sort order by using antistring, default ! for get is before all standard characters
+        # so its after all when inversed by antistring
+        item = item[1:]
+        sortItems.append(antistring(unicode(thing.get(item, "!")).lower()))
+      else:
+        # normal sort order, default | for get is after all standard characters
+        sortItems.append(unicode(thing.get(item, "|")).lower())
+    return sortItems 
+      
+  return extended_getter
+
 def add_todo_item_list(query):
     """Adds all todo items nicley formatted to the feedback items
 
@@ -352,7 +383,7 @@ def add_todo_item_list(query):
             todoItem['priority'] = todoItem['description'][1:2]
             todoItem['description'] = todoItem['description'][4:]
         else: 
-            todoItem['priority'] = "noPrio"
+            todoItem['priority'] = "ZZ" # default, sorted at last position
 
         todoItem['title'] = todoItem['description'] # will be the title to be displayed
         todoItem['subtitle'] = "" # subtitle
@@ -397,12 +428,10 @@ def add_todo_item_list(query):
 
         currentTodos.append(todoItem)
 
-    # sorting = wf.settings[sorting].split(';')
-    # sortstring = ""
-    # for sortkey in sorting:
-    #     sortstring = "".join([sortstring, todoItem[sortkey]])
-    # sort by specific key TODO special sort key function
-    currentTodos.sort(key=lambda todoItem : todoItem['priority'].join(todoItem['addedDate'].isoformat()))
+    # retrieve sort keys from settings
+    sorting = wf.settings['sorting'].split(';')
+    # sort using custom itemgetter and the sortkeys
+    currentTodos.sort(key=extended_itemgetter(*sorting))
 
     for todoItem in currentTodos:
         # Add the item
@@ -505,4 +534,5 @@ if __name__ == u"__main__":
     # get file location as stored in the settings
     todotxt_location = wf.settings.get('todo-file-location', None)
     donetxt_location = wf.settings.get('done-file-location', None)
+    wf.settings['sorting'] = "priority;addedDate;title" # TODO: add feedback based selection on setup
     sys.exit(wf.run(main))
