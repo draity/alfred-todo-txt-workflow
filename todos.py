@@ -11,7 +11,7 @@ from datetime import date, datetime
 from workflow import Workflow, ICON_WARNING
 
 def setup(query):
-    """Setup the workflow settings. 
+    """Setup the workflow settings.
     Called directly through argumnet --setup or if there is some setting missing
 
     Arguments: query should be the currently entered query as unicode string
@@ -60,7 +60,7 @@ def rewrite_files(linenumber, action, value):
             for i, line in enumerate(backupFile):
                 line = wf.decode(line)
                 if line[:-1] == "":
-                    n = n - 1 # hack for empty lines TODO: remove if not needed 
+                    n = n - 1 # hack for empty lines TODO: remove if not needed
                     continue
                 if str(i+n) == linenumber: #if desired line found
                     if action == u"done":
@@ -90,7 +90,7 @@ def rewrite_files(linenumber, action, value):
                         match = re.match(r"(\([A-Z]\))\s(\d{4}-\d{2}-\d{2})", line)
                         # Append input according to keep existing values
                         # TODOD: check value for prio and date
-                        if match.group(1) and match.group(2): 
+                        if match.group(1) and match.group(2):
                             newLine = "".join([line[:15], value, "\n"])
                         elif match.group(1):
                             newLine = "".join([line[:4], value, "\n"])
@@ -123,7 +123,7 @@ def perform_action(query):
     """Calls an action according to the action keyword.
     Current actions are: add (Key=add), do (Key=done), delelte (Key=delete) , prioritize (Key=prio) and edit (Key=edit) a todo.
     No matter which or if an action was called, the workflow is triggered again via applescript to list all todos.
-    
+
     Arguments: query is a unicode string delimeted by delimiter
     """
     if len(query) >= 1:
@@ -173,7 +173,7 @@ def perform_action(query):
                 wf.settings['setup-step'] = None # update setup step
                 subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "todo "']) # forward
                 print("done.txt file selected: {filePath}".format(filePath=action)) # print confirmation to notification
-            
+
 
 def add_new_todo(query):
     """Generates the feedback items while entering a new todo
@@ -195,7 +195,7 @@ def get_suggestions(query, symbol):
 
     Arguments:  query should be the currently entered query as unicode string
                 symbol is the symbol which starts suggestion for these suggestables
-    """ 
+    """
     suggestables = set() # set of all suggestables for this symbol
     regex = r"(?:\s|^)(" + re.escape(symbol) + r"\S+)"
     for line in open(todotxt_location, "r"):
@@ -217,7 +217,7 @@ def get_suggestions(query, symbol):
                 matchingSuggestables.append(dict(suggestion=suggestable, autocomplete=autocompleteTerm))
 
     # log.debug(matchingSuggestables)
-    
+
     # add feedback items
     for suggestion in matchingSuggestables:
         wf.add_item( title=suggestion['suggestion']
@@ -233,7 +233,7 @@ def add_suggestions(query):
     """
     # Get projects suggestions
     match = re.match(r".*(?:\s|^)(\+\S*)", query)
-    if match: 
+    if match:
         get_suggestions(query, "+")
 
     # Get context suggestions
@@ -250,8 +250,8 @@ def add_todo_item_actions(query):
     if (not 'selected' in wf.settings.keys() or wf.settings['selected']['id'] != query[0]):
         # save the current selection in the settings dict
         wf.settings['selected'] = {'id': query[0], 'todo': query[1]}
-    
-    # At this point a selection with the same id as the current query is saved! 
+
+    # At this point a selection with the same id as the current query is saved!
     # If the todo description (as stored in the todo.txt file) for this id is the same as the current query text:
     # show all options, else hide them and only show the edit entry
     if (wf.settings['selected']['todo'] == query[1]):
@@ -326,7 +326,7 @@ def antistring(x):
 
   Arguments: a string x
   """
-  return [256-ord(c) for c in x]+[257] 
+  return [256-ord(c) for c in x]+[257]
 
 def extended_itemgetter(*items):
   """Returns a callable creating a list of dict items of an object, supporting reverse (-) and lowercase
@@ -348,8 +348,8 @@ def extended_itemgetter(*items):
       else:
         # normal sort order, default | for get is after all standard characters
         sortItems.append(unicode(thing.get(item, "|")).lower())
-    return sortItems 
-      
+    return sortItems
+
   return extended_getter
 
 def add_todo_item_list(query):
@@ -368,7 +368,7 @@ def add_todo_item_list(query):
         if description != "":
             todoList.append(dict(id=i, description=description))
             i = i + 1
-    
+
     # If script was passed a query, use it to filter posts
     if query[0]:
         todoList = wf.filter(query[0], todoList, key=get_description)
@@ -382,13 +382,13 @@ def add_todo_item_list(query):
         if match:
             todoItem['priority'] = todoItem['description'][1:2]
             todoItem['description'] = todoItem['description'][4:]
-        else: 
+        else:
             todoItem['priority'] = "ZZ" # default, sorted at last position
 
         todoItem['title'] = todoItem['description'] # will be the title to be displayed
         todoItem['subtitle'] = "" # subtitle
 
-        # split todo description on threshold date 
+        # split todo description on threshold date
         match = re.split(r"(t:\d{4}-\d{2}-\d{2})", todoItem['description'])
         # if todo description contains a threshold date the matched length is a minimum of 2
         if len(match) >= 2 :
@@ -415,7 +415,7 @@ def add_todo_item_list(query):
             since = today - todoItem['addedDate']
             todoItem['subtitle'] += u"since {days} days".format(days=since.days)
 
-        # split todo description on due date 
+        # split todo description on due date
         match = re.split(r"(due:\d{4}-\d{2}-\d{2})", todoItem['description'])
         # if todo description contains a duedate the matched length is a minimum of 2
         if len(match) >= 2 :
@@ -445,13 +445,13 @@ def add_todo_item_list(query):
 def main(wf):
     """Main method which is triggered for each query
     Calls the desired action or feedback functions
-    
+
     Arguments:  wf is the workflow object
     """
     ####################################################################
     # Parse arguments
     ####################################################################
-    
+
     parser = argparse.ArgumentParser()
     # add an optional flag --action to call this script to perform actions
     parser.add_argument('--action', dest='action', default=None, action="store_true")
@@ -463,7 +463,7 @@ def main(wf):
     parser.add_argument('query', nargs='?', default=None)
     # parse the script's arguments
     args = parser.parse_args(wf.args)
-    
+
     ####################################################################
     # Trigger settings changes
     ####################################################################
@@ -481,7 +481,7 @@ def main(wf):
         return 0
 
     ####################################################################
-    # Call desired mode: 
+    # Call desired mode:
     # - action: do something, show nothing
     # - add: add a todo as given by query
     # - feedback: create and list feedback items
@@ -498,10 +498,10 @@ def main(wf):
         ### List mode ###
         # split query on delimiter
         query = args.query.split(delimiter)
-        
+
         # parts are used to select state
         numberOfQueryParts = len(query)
-        
+
         if numberOfQueryParts == 2:
             ## State 2: show item actions ##
             ## Precondition at this point: Todo selected ##
@@ -518,7 +518,7 @@ def main(wf):
 
             # get and add suggestions
             add_suggestions(query[0])
-            
+
             # add todo items
             add_todo_item_list(query)
 
