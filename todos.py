@@ -476,7 +476,7 @@ def main(wf):
     # Check for missing settings: call setup
     ####################################################################
 
-    if not todotxt_location or not donetxt_location:
+    if (not args.action) and (not todotxt_location or not donetxt_location):
         setup(args.query)
         return 0
 
