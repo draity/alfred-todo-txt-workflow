@@ -7,7 +7,8 @@ import re
 import argparse
 import os
 from shutil import copyfile
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from workflow import Workflow, ICON_WARNING
 
 def setup(query):
@@ -81,6 +82,21 @@ def rewrite_files(linenumber, action, value):
                         else:
                             newLine = "".join(["(", value, ") ", line])
                         todoFile.write(newLine.encode('utf-8'))
+                    elif action == u"due":
+                        ####################################################################
+                        # Set actions due date
+                        ####################################################################
+                        newLine = ""
+                        # split todo description on due date
+                        match = re.split(r"(due:\d{4}-\d{2}-\d{2})", line)
+                        # if todo description contains a duedate the matched length is a minimum of 2
+                        if len(match) >= 2 :
+                            # replace the existing due date
+                            newLine = "".join([match[0].strip(), " due:", value.strip(), " ", match[2].strip(), "\n"])
+                        else:
+                            # add a new due date
+                            newLine = "".join([line.rstrip(), " due:", value.strip(), "\n"])
+                        todoFile.write(newLine.encode('utf-8'))
                     elif action == u"edit":
                         ####################################################################
                         # Edit action
@@ -113,7 +129,7 @@ def rewrite_selected(linenumber, action, todo):
         # Delete action
         ####################################################################
         del wf.settings['selected']
-    elif action == u"edit":
+    else:
         ####################################################################
         # Edit action
         ####################################################################
@@ -141,9 +157,9 @@ def perform_action(query):
             with open(todotxt_location, "a") as todoFile:
                 todoFile.write(newTodo.encode('utf-8'))
             subprocess.call(["osascript", "-e", 'tell application "Alfred 2" to search "todo "'])
-        elif action == u"done" or action == u"delete" or action == u"prio" or action == u"edit":
+        elif action == u"done" or action == u"delete" or action == u"prio" or action == u"due" or action == u"edit":
             ####################################################################
-            # Do, delete, prioritize and edit action
+            # Do, delete, prioritize, due and edit action
             ####################################################################
             id = query[1][1:]
             if (len(query) > 2):
@@ -273,6 +289,11 @@ def add_todo_item_actions(query):
                    , valid=False
                    , icon=u"prio.png"
                    )
+        wf.add_item( title=u"Set due date"
+                   , subtitle=u"Choose in following steps"
+                   , autocomplete=u"{id}{delimiter}due{delimiter}{tomorrow}".format(id=query[0], delimiter=delimiter, tomorrow=(datetime.today() + timedelta(days=1)).strftime("%Y-%m-%d"))
+                   , valid=False
+                   )
 
     wf.add_item( title=u"Edit directly..."
                , subtitle=u"...to: {todo}".format(todo=query[1])
@@ -310,6 +331,33 @@ def add_priority_options(query):
                , arg=u"prio{delimiter}{id}{delimiter}C".format(id=query[0], delimiter=delimiter)
                , valid=True
                , icon=u"C.png"
+               )
+    wf.add_item( title=u"Return to list"
+               , arg=u"return"
+               , valid=True
+               , icon=u"return.png"
+               )
+
+def add_date_options(query):
+    """Adds all some date options (like tomorrow or next week) and an input option to the feedback items
+
+    Arguments:  query should be a delimeted unicode string in the form: {id}{delimiter}due{delimiter}{date}
+    """
+    wf.add_item( title=u"Input: {date}".format(date=query[2])
+               , arg=u"due{delimiter}{id}{delimiter}{date}".format(id=query[0], delimiter=delimiter, date=query[2])
+               , valid=True
+               )
+    wf.add_item( title=u"Tomorrow"
+               , arg=u"due{delimiter}{id}{delimiter}{tomorrow}".format(id=query[0], delimiter=delimiter, tomorrow=(datetime.today() + timedelta(days=1)).strftime("%Y-%m-%d"))
+               , valid=True
+               )
+    wf.add_item( title=u"Next week"
+               , arg=u"due{delimiter}{id}{delimiter}{nextWeek}".format(id=query[0], delimiter=delimiter, nextWeek=(datetime.today() + timedelta(days=7)).strftime("%Y-%m-%d"))
+               , valid=True
+               )
+    wf.add_item( title=u"Next Month"
+               , arg=u"due{delimiter}{id}{delimiter}{nextMonth}".format(id=query[0], delimiter=delimiter, nextMonth=(datetime.today() + relativedelta(months=+1)).strftime("%Y-%m-%d"))
+               , valid=True
                )
     wf.add_item( title=u"Return to list"
                , arg=u"return"
@@ -510,8 +558,10 @@ def main(wf):
         elif numberOfQueryParts == 3:
             ## State 3: show priority options ##
             ## Precondition at this point: Priority action selected ##
-            add_priority_options(query)
-
+            if "prio" in query:
+                add_priority_options(query)
+            elif "due" in query:
+                add_date_options(query)
         else:
             ## State 1: show list of todos ##
             ## Precondition at this point: none ##
